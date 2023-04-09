@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Donjour">
+    <title>Hard to Decide What To Eat?</title>
+    <link rel="stylesheet" href="assets/vendors/themify-icons/css/themify-icons.css">
+    <link rel="stylesheet" href="assets/vendors/owl-carousel/css/owl.carousel.css">
+    <link rel="stylesheet" href="assets/vendors/owl-carousel/css/owl.theme.default.css">
+    <link rel="stylesheet" href="assets/css/donjour.css">
+
+
+<!--    Google API KEY and functions     -->
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0ZBox8hn7laQWt7sQhoTcEIJtS8MwP64&libraries=places"></script>
+    <script>
+        var map;
+        var marker;
+        var resultCount = parseInt(localStorage.getItem('resultCount')) || 0;
+
+        function initMap() {
+            var zipCode = document.getElementById('zipCode').value;
+            var geocoder = new google.maps.Geocoder();
+
+            geocoder.geocode({'address': zipCode}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var lat = results[0].geometry.location.lat();
+                    var lng = results[0].geometry.location.lng();
+                    var location = new google.maps.LatLng(lat, lng);
+                    map = new google.maps.Map(document.getElementById('map'), {
+                        center: location,
+                        zoom: 17
+                    });
+                    var request = {
+                        query: 'restaurants',
+                        fields: ['name', 'geometry', 'formatted_address', 'photos', 'rating'],
+                        location: location,
+                        radius: 2500
+                    };
+                    var service = new google.maps.places.PlacesService(map);
+                    service.textSearch(request, callback);
+                    
+                    resultCount++;
+                    localStorage.setItem('resultCount', resultCount);
+                    document.getElementById('result-count').innerHTML = resultCount;
+
+                } else {
+                    alert('Please put a Valid Zip Code!');
+                }
+            });
+        }   
+        
+        
+        function callback(results, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                var randomIndex = Math.floor(Math.random() * results.length);
+                var randomRestaurant = results[randomIndex];
+                var restaurantName = randomRestaurant.name;
+                var restaurantAddress = randomRestaurant.formatted_address;
+                var rating = randomRestaurant.rating;
+                var photoUrl = randomRestaurant.photos ? randomRestaurant.photos[0].getUrl() : '';
+
+                var fullStars = Math.floor(rating);
+                var halfStars = Math.round(rating - fullStars);
+                var emptyStars = 5 - fullStars - halfStars;
+                var ratingDisplay = '<span style="font-size: 24px;">' + rating + ' ';
+                for (var i = 0; i < fullStars; i++) {
+                ratingDisplay += '★';
+                }
+                for (var i = 0; i < halfStars; i++) {
+                ratingDisplay += '☆';
+                }
+                for (var i = 0; i < emptyStars; i++) {
+                ratingDisplay += '☆';
+                }
+                ratingDisplay += '</span>';
+
+                document.getElementById('result').innerHTML = '<h4 style="text-align:center;">Here is the Result:</h4><br><div style="text-align:center;"><strong style="font-size: 24px;">' + restaurantName + '</strong>' 
+                + ' (Rating: ' + ratingDisplay + ')' + '<br>' + '<span style="font-size: 18px;">' + restaurantAddress + '</span>' + '<br><br>' 
+                + '<img src="' + photoUrl + '" style="width: 80%; height: 80%;"></div>';
+
+                var marker = new google.maps.Marker({
+                position: randomRestaurant.geometry.location,
+                map: map,
+                title: randomRestaurant.name
+                });
+
+                map.setCenter(randomRestaurant.geometry.location);
+                // Create container div for Get Direction button
+                var buttonContainer = document.createElement('div');
+                buttonContainer.setAttribute('class', 'button-container');
+                map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(buttonContainer);
+
+                // Create Get Direction button
+                var getDirectionBtn = document.createElement('button');
+                getDirectionBtn.innerHTML = 'Get Direction';
+                getDirectionBtn.classList.add('btn', 'btn-primary');
+                buttonContainer.appendChild(getDirectionBtn);
+
+                // Create click event listener for Get Direction button
+                getDirectionBtn.addEventListener('click', function() {
+                var destination = encodeURIComponent(restaurantAddress);
+                window.open('https://www.google.com/maps/dir/?api=1&destination=' + destination, '_blank');
+                
+                resultCount++;
+                localStorage.setItem('resultCount', resultCount);
+                document.getElementById('result-count').innerHTML = resultCount;
+                });
+            }
+            }
+
+        
+        
+</script>
+    
+</head>
+
+
+<!--        Nav Bar         -->
+
+<body data-spy="scroll" data-target=".navbar" data-offset="40" id="home">
+
+    <nav id="scrollspy" class="navbar navbar-light bg-light navbar-expand-lg fixed-top" data-spy="affix" data-offset-top="20">
+        <div class="container">
+            <a class="navbar-brand" href="#"><img src="assets/imgs/brand.svg" alt="" class="brand-img"></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar" id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#whattoeat">What to Eat?</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>                    
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+<!--        Main Header         -->
+
+    <header id="home" class="header">
+        <div class="overlay"></div>
+
+        <div id="header-carousel" class="carousel slide carousel-fade" data-ride="carousel">  
+            <div class="container">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h1 class="carousel-title">Tired of the Same Food<br>Every Day? </h1>
+                            <button class="btn btn-primary btn-rounded" href="#whattoeat" onclick="window.location.href='#whattoeat'">Show me !</button>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h1 class="carousel-title">Hard to Decide<br> What to Eat?</h1>
+                            <button class="btn btn-primary btn-rounded" href="#whattoeat" onclick="window.location.href='#whattoeat'">Show me !</button>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h1 class="carousel-title">We Will <br> Narrow the options!</h1>
+                            <button class="btn btn-primary btn-rounded" href="#whattoeat" onclick="window.location.href='#whattoeat'">Show me !</button>
+                        </div>
+                    </div>
+                </div>
+            </div>        
+        </div>
+
+        <div class="infos container mb-4 mb-md-2">
+            <div class="title">
+                <h6 class="subtitle font-weight-normal">Created by</h6>
+                <h5>Donjour</h5>
+                <p class="font-small">All Feedbacks are Welcome!</p>
+            </div>
+            <div class="socials text-right">
+                <div class="row justify-content-between">
+                    <div class="col">
+                        <a class="d-block subtitle"><i class="ti-email pr-2"></i> dongjunane@gmail.com</a>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+
+
+<!--        Recommendation button       -->
+
+
+<section class="section bg-overlay" id="whattoeat">
+    <div class="container">
+      <div class="infos mb-4 mb-md-2">
+        <div class="title">
+          <h6 class="subtitle font-weight-normal">Let Us Decide!</h6>
+          <h5>It's Simple! Just put your Zip Code!</h5>
+          <p class="font-small">We will recommend random restaurant for you</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="container">
+        <label for="zipCode">Zip Code:</label>
+        <input type="text" id="zipCode" onkeydown="if(event.keyCode==13) initMap()">
+        <button class="btn btn-primary btn-rounded" onclick="initMap()">Find!</button>
+    </div>
+
+    <div class="container" id="result" style="margin-top: 20px;"></div>
+    <div class="container" id="map" style="height: 400px"></div>
+    
+
+    
+</section>
+
+
+
+
+<!--        About section       -->    
+
+    <section class="section" id="about">
+
+        <div class="container">
+
+            <div class="row align-items-center mr-auto">
+                <div class="col-md-4">
+                    <h6 class="xs-font mb-0">Made this Website to let you save your time</h6>
+                    <h3 class="section-title">History of this Website_</h3>
+                    <p>This Website is Dedicated for all men<br>
+                    Who deal with "I DoN't cArE" problem<br>
+                    When they ask their girlfriend or wife<br>
+                    "What do you want for dinner?"<br></p>
+                    
+                </div>
+
+
+                <!--        left two        -->
+                <div class="col-sm-6 col-md-4 ml-auto">
+                    <div class="widget">
+                      <div class="icon-wrapper">
+                        <i class="ti-calendar"></i>
+                      </div>
+                      <div class="infos-wrapper">
+                        <h4 class="text-primary" id="result-count">0</h4>
+                        <p>People got the Result!</p>
+                      </div>
+                    </div>
+                    
+
+
+                    <div class="widget">
+                      <div class="icon-wrapper">
+                        <i class="ti-face-smile"></i>
+                      </div>
+                      <div class="infos-wrapper">
+                        <h4 class="text-primary" id="satisfaction-count">0</h4>
+                        <p>People were Satisfied! 
+                            <br><br>
+                            <button id="satisfaction-button" class="btn btn-primary">Click if Satisfied</button></p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <script>
+                        const satisfactionCount = document.getElementById('satisfaction-count');
+                        const satisfactionButton = document.getElementById('satisfaction-button');
+
+                        let count = parseInt(localStorage.getItem('satisfactionCount')) || 0;
+                        satisfactionCount.innerText = count;
+
+                        satisfactionButton.addEventListener('click', () => {
+                        count++;
+                        localStorage.setItem('satisfactionCount', count);
+                        satisfactionCount.innerText = count;
+                        });
+                  </script>
+                  
+
+                  
+                <!--        right two       -->
+                <div class="col-sm-6 col-md-4">
+                    <div class="widget">
+                        <div class="icon-wrapper">
+                            <i class="ti-star"></i>
+                        </div>
+                        <div class="infos-wrapper">
+                            <h4 class="text-primary">#</h4>
+                            <p>People added Bookmark!</p>
+                        </div>
+                    </div>
+                    <div class="widget">
+                        <div class="icon-wrapper">
+                            <i class="ti-user"></i>
+                        </div>
+                        <div class="infos-wrapper">
+                            <h4 class="text-primary">#</h4>
+                            <p>People sent Feedback!</p>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+    </section>
+
+
+
+
+<!--        Contact us Section, Feedback      -->    
+
+    <section id="contact" class="section pb-0">
+
+        <div class="container">
+            <h6 class="xs-font mb-0">Tell us how we did.</h6>
+            <h3 class="section-title mb-5">Contact Us</h3>
+
+            <div class="row align-items-center justify-content-between">
+                <div class="col-md-8 col-lg-7">
+
+                    <form class="contact-form">
+                        <div class="form-row">
+                            <div class="col form-group">
+                                <input type="text" class="form-control" placeholder="Name">
+                            </div>
+                            <div class="col form-group">
+                                <input type="email" class="form-control" placeholder="Email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="" id="" cols="30" rows="5" class="form-control" placeholder="Your Message"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary btn-block" value="Send Email">
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-4 d-none d-md-block order-1">
+                    <ul class="list">
+                        <li class="list-head">
+                            <h6>CONTACT INFO</h6>
+                        </li>
+                        <li class="list-body">
+                            <p class="py-2"><i class="ti-email"></i>  dongjunane@gmail.com </p>
+
+                        </li>
+                    </ul> 
+                </div>
+            </div>
+
+
+
+
+<!--        Copyright & SNS       -->         
+
+            <footer class="footer mt-5 border-top">
+                <div class="row align-items-center justify-content-center">
+                    <div class="col-md-6 text-center text-md-left">
+                        <p class="mb-0">Copyright <script>document.write(new Date().getFullYear())</script> &copy; <a target="_blank" href="">Donjour</a></p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-right">
+                        <div class="social-links">
+                            <a href="javascript:void(0)" class="link"><i class="ti-facebook"></i></a>
+                            <a href="javascript:void(0)" class="link"><i class="ti-twitter-alt"></i></a>
+                            <a href="javascript:void(0)" class="link"><i class="ti-google"></i></a>
+                            <a href="javascript:void(0)" class="link"><i class="ti-pinterest-alt"></i></a>
+                            <a href="javascript:void(0)" class="link"><i class="ti-instagram"></i></a>
+                            <a href="javascript:void(0)" class="link"><i class="ti-rss"></i></a>
+                        </div>
+                    </div>
+                </div> 
+            </footer>
+        </div>
+    </section>
+	
+    <script src="assets/vendors/jquery/jquery-3.4.1.js"></script>
+    <script src="assets/vendors/bootstrap/bootstrap.bundle.js"></script>
+	<script src="assets/vendors/bootstrap/bootstrap.affix.js"></script>
+    <script src="assets/vendors/owl-carousel/js/donjour.js"></script>
+
+</body>
+</html>
